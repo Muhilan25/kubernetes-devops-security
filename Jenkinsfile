@@ -27,15 +27,29 @@ pipeline {
 
         stage("docker image") {
           steps {
-            withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-              sh '''
-                docker build -t spring-app:${IMAGE_TAG} .
-                docker tag spring-app:${IMAGE_TAG} ${ECR_REPO}/spring-app:${IMAGE_TAG}
-                docker push ${ECR_REPO}/spring-app:${IMAGE_TAG}
-              '''
-            }
+              withCredentials([
+                  aws(
+                      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                      credentialsId: 'aws-cred',
+                      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                  )
+              ]) {
+                  sh '''
+                      aws ecr get-login-password --region ap-south-1 | \
+                      docker login --username AWS --password-stdin \
+                      072583797351.dkr.ecr.ap-south-1.amazonaws.com
+
+                      docker build -t spring-app:${IMAGE_TAG} .
+
+                      docker tag spring-app:${IMAGE_TAG} \
+                      ${ECR_REPO}/spring-app:${IMAGE_TAG}
+
+                      docker push \
+                      ${ECR_REPO}/spring-app:${IMAGE_TAG}
+                  '''
+              }
           }
-        }
+      }
 
     }
 }

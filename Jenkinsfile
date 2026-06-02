@@ -1,5 +1,9 @@
 pipeline {
   agent any
+  environment {
+    IMAGE_TAG = "V${BUILD_NUMBER}"
+    ECR_REPO = "072583797351.dkr.ecr.ap-south-1.amazonaws.com/spring-app"
+  }
 
   stages {
       stage('Build Artifact') {
@@ -20,6 +24,17 @@ pipeline {
             }
           }
         }   
+
+        stage("docker image") {
+          steps {
+            withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+              sh '''
+                docker build -t spring-app:${IMAGE_TAG} .
+                docker push ${ECR_REPO}/spring-app:${IMAGE_TAG}
+              '''
+            }
+          }
+        }
 
     }
 }

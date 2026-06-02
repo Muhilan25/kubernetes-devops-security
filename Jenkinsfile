@@ -30,6 +30,7 @@ pipeline {
             withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
               sh '''
                 docker build -t spring-app:${IMAGE_TAG} .
+                docker tag spring-app:${IMAGE_TAG} ${ECR_REPO}/spring-app:${IMAGE_TAG}
                 docker push ${ECR_REPO}/spring-app:${IMAGE_TAG}
               '''
             }

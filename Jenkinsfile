@@ -2,7 +2,7 @@ pipeline {
   agent any
   environment {
     IMAGE_TAG = "V${BUILD_NUMBER}"
-    ECR_REPO = "072583797351.dkr.ecr.ap-south-1.amazonaws.com/spring-app"
+    ECR_REPO = "072583797351.dkr.ecr.ap-south-1.amazonaws.com"
   }
 
   stages {

@@ -54,6 +54,17 @@ pipeline {
           }
         }
 
+        stage("vulnerability-scan") {
+          steps {
+            sh 'mvn dependency-check:check'
+          }
+          post {
+            always {
+              dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+            }
+          }
+        }
+
         stage("docker image") {
           steps {
               withCredentials([

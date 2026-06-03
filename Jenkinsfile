@@ -67,7 +67,7 @@ pipeline {
 
         stage("trivy") {
           steps {
-            sh 'trivy fs --format table -o trivy-scan.html'
+            sh 'trivy fs --format table -o trivy-scan.html .'
           }
         }
 
@@ -98,9 +98,9 @@ pipeline {
             }
         }
 
-       stage("trivy") {
+       stage("trivy-image") {
           steps {
-            sh 'trivy image --format table -o trivy-image.html .'
+            sh 'trivy image --format table -o trivy-image.html spring-app:${IMAGE_TAG}'
           }
         }
 

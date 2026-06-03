@@ -9,11 +9,7 @@ pipeline {
 
   stages {
 
-      stage("checkout") {
-        steps {
-            git branch: 'main', url: 'https://github.com/Muhilan25/kubernetes-devops-security.git'
-        }
-      }
+
 
       stage("git leaks") {
         steps {

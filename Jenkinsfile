@@ -1,11 +1,25 @@
 pipeline {
   agent any
+
   environment {
     IMAGE_TAG = "V${BUILD_NUMBER}"
+    SCANNER_HOME = tool 'sonar'
     ECR_REPO = "072583797351.dkr.ecr.ap-south-1.amazonaws.com"
   }
 
   stages {
+
+      stage("checkout") {
+        steps {
+            git branch: 'main', url: 'https://github.com/Muhilan25/kubernetes-devops-security.git'
+        }
+      }
+
+      stage("git leaks") {
+        steps {
+          sh 'gitleaks detect --report-format=json --report-path=gitleaks-report.json --exit-code=1'
+        }
+      }
       stage('Build Artifact') {
             steps {
               sh "mvn clean package -DskipTests=true"
@@ -13,14 +27,17 @@ pipeline {
             }
         }
 
-        stage("unit test-junit and jacoco") {
+        stage("unit test-junit") {
           steps {
             sh "mvn test"
           }
-          post {
-            always {
-              junit 'target/surefire-reports/*.xml'
-              jacoco execPattern: 'target/jacoco.exec'
+        }
+
+        stage("sonarqube") {
+          steps {
+            withSonarQubeEnv(credentialsId: 'sonar-cred') {
+              sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=numeric-application \
+                        -Dsonar.projectKey=numeric-application '''
             }
           }
         }   

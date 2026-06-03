@@ -65,6 +65,13 @@ pipeline {
           }
         }
 
+        stage("trivy") {
+          steps {
+            sh 'trivy fs --format table -o trivy-scan.html'
+          }
+        }
+
+
         stage("docker image") {
           steps {
               withCredentials([
@@ -88,8 +95,14 @@ pipeline {
                       ${ECR_REPO}/spring-app:${IMAGE_TAG}
                   '''
               }
+            }
+        }
+
+       stage("trivy") {
+          steps {
+            sh 'trivy image --format table -o trivy-image.html .'
           }
-      }
+        }
 
     }
 }

@@ -9,13 +9,17 @@ pipeline {
 
   stages {
 
-
-
-      stage("git leaks") {
+      stage("git checkout") {
         steps {
-          sh 'gitleaks detect --report-format=json --report-path=gitleaks-report.json --exit-code=1'
+          git branch: 'main', url: 'https://github.com/Muhilan25/kubernetes-devops-security.git'
         }
       }
+
+      // stage("git leaks") {
+      //   steps {
+      //     sh 'gitleaks detect --report-format=json --report-path=gitleaks-report.json --exit-code=1'
+      //   }
+      // }
       stage('Build Artifact') {
             steps {
               sh "mvn clean package -DskipTests=true"
@@ -29,14 +33,26 @@ pipeline {
           }
         }
 
-        stage("sonarqube") {
+        stage('SonarQube') {
           steps {
-            withSonarQubeEnv(credentialsId: 'sonar-cred') {
-              sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=numeric-application \
-                        -Dsonar.projectKey=numeric-application '''
-            }
+              withSonarQubeEnv('sonarqube-scanner') {
+                  sh '''
+                      mvn sonar:sonar \
+                      -Dsonar.projectKey=numeric-application \
+                      -Dsonar.projectName=numeric-application
+                  '''
+              }
           }
-        }   
+        }
+
+        stage("quality gates") {
+          steps {
+            timeout(time: 2, unit: 'MINUTES') {
+               waitForQualityGate abortPipeline: false, credentialsId: 'sonar-cred'
+            }
+           
+          }
+        }
 
         stage("docker image") {
           steps {
